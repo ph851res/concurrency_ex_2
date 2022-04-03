@@ -20,9 +20,7 @@ public class ProofOfWork {
             boolean result = checkHash(this.block, nonceInner, this.target);
             if (result==true) {
                 break;
-            } else {
-                nonceInner++;
-            }
+            } else nonceInner++;
         }
         return nonceInner;
     }
