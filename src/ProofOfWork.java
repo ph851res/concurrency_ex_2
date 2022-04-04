@@ -6,54 +6,51 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 public class ProofOfWork {
-    int nonce;
-    String block;
-    BigInteger target;
     AtomicLong winnerNonce;
-    public ProofOfWork(int nonce, String block, BigInteger target) {
-        this.nonce = nonce;
-        this.block = block;
-        this.target = target;
+
+    public ProofOfWork() {
         this.winnerNonce = new AtomicLong(-1);;
     }
-
-    public int proveWork() throws NoSuchAlgorithmException{
-        int nonceInner = this.nonce;
-        while (true) {
+    public long proveWork(String block, BigInteger target) {
+        int currentNonce = 0;
+        while (winnerNonce.get() == -1) {
             new Thread(new Runnable() {
                 private String block;
                 private BigInteger target;
                 private int nonceInner;
+                MessageDigest digest;
                 public Runnable init(String block, BigInteger target, int nonceInner) {
                     this.block = block;
                     this.target = target;
                     this.nonceInner = nonceInner;
+                    try {
+                        this.digest = MessageDigest.getInstance("SHA-256");
+                    } catch (NoSuchAlgorithmException e) {
+
+                    }
                     return this;
                 }
                 @Override
                 public void run() {
                     try {
-                        checkHash(this.block, nonceInner, this.target);
+                        checkHash(this.block, nonceInner, this.target, this.digest);
                     }
                     catch (NoSuchAlgorithmException e) {
                         System.out.println("NoSuchAlgorithmException");
                     }
                 }
-            }.init(this.block, this.target, nonceInner)).start();
-            if ((int)winnerNonce.get() != -1) {
-                break;
-            } else nonceInner++;
+            }.init (block, target, currentNonce)).start();
+            currentNonce++;
         }
-        return (int)winnerNonce.get();
+        return winnerNonce.get();
     }
 
-    public void checkHash(String block, int nonce, BigInteger target) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    public void checkHash(String block, int nonce, BigInteger target, MessageDigest digest) throws NoSuchAlgorithmException {
         byte[] hash = digest.digest(digest.digest(block.concat(Integer.toString(nonce)).getBytes(StandardCharsets.UTF_8)));
         BigInteger number = new BigInteger(1, hash);
         System.out.println(number);
         if (number.compareTo(target) == -1) {
-            System.out.println("hello");
+            System.out.println("in here");
             this.winnerNonce.set(nonce);
         }
     }
