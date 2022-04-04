@@ -15,14 +15,14 @@ public class ProofOfWork {
     }
 
     public int proveWork() throws NoSuchAlgorithmException{
-        int nonceInner = this.nonce;
+        int nonceInnerPW = this.nonce;
         while (true) {
-            boolean result = checkHash(this.block, nonceInner, this.target);
+            boolean result = checkHash(this.block, nonceInnerPW, this.target);
             if (result==true) {
                 break;
-            } else nonceInner++;
+            } else nonceInnerPW++;
         }
-        return nonceInner;
+        return nonceInnerPW;
     }
 
     public boolean checkHash(String block, int nonce, BigInteger target) throws NoSuchAlgorithmException {
